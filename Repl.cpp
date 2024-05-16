@@ -2,6 +2,7 @@
 // Created by usagi on 5/15/2024.
 //
 
+#include <vector>
 #include "Repl.h"
 #include "Util.h"
 
@@ -32,7 +33,7 @@ void ModeEncrypt() {
     fsIn.open(QueryEncryptInputFile());
 
     ofstream fsOut;
-    fsOut.open(Query("What file would you like to output to? (will automatically end in .aes)") + ".aes", ios::out | ios::binary);
+    fsOut.open(Query("What file would you like to output to? (will automatically end in .aes)") + ".aes", ios::binary);
 
     unsigned char* rgcKey = QueryKey();
 
@@ -56,9 +57,10 @@ void ModeEncrypt() {
         for (int iChar = 0; iChar < szLine.size(); ++iChar) {
             rgcBuffer[nBufferSize++] = szLine[iChar];
             if (nBufferSize >= 16) {
-                const unsigned int* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
+                const unsigned char* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
                 for (int n = 0; n < 16; ++n) {
-                    fsOut << (unsigned char) rgu32Result[n];
+                    fsOut << rgu32Result[n];
+                    out += rgu32Result[n];
                 }
                 delete[] rgu32Result;
                 nBufferSize = 0;
@@ -69,9 +71,10 @@ void ModeEncrypt() {
         for (;nBufferSize < 16; ++nBufferSize) {
             rgcBuffer[nBufferSize] = 0;
         }
-        const unsigned int* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
+        const unsigned char* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
         for (int n = 0; n < 16; ++n) {
-            fsOut << (unsigned char) rgu32Result[n];
+            fsOut << rgu32Result[n];
+            out += rgu32Result[n];
         }
         delete[] rgu32Result;
     }
@@ -81,12 +84,12 @@ void ModeEncrypt() {
     fsOut.close();
     fsIn.close();
 
-    cout << "\tSUCCESS" << endl << endl;
+    cout << "\n\tSUCCESS" << endl << endl;
 }
 
 void ModeDecrypt() {
     ifstream fsIn;
-    fsIn.open(QueryDecryptInputFile());
+    fsIn.open(QueryDecryptInputFile(), ios::binary);
 
     ofstream fsOut;
     fsOut.open(Query("What file would you like to output to?"));
@@ -103,27 +106,28 @@ void ModeDecrypt() {
     string szLine;
     unsigned char rgu32Buffer[16];
     unsigned int nBufferSize = 0;
-    while (getline(fsIn, szLine)) {
-        szLine += '\n';
 
-        // read string char by char
-        for (int iChar = 0; iChar < szLine.size(); ++iChar) {
-            rgu32Buffer[nBufferSize++] = szLine[iChar];
-            if (nBufferSize >= 16) {
-                const unsigned char* rgcResult = cypher.Decrypt(rgu32Buffer, rgu32Expanded);
-                for (int n = 0; n < 16; ++n) {
-                    fsOut << rgcResult[n];
-                }
-                delete[] rgcResult;
-                nBufferSize = 0;
+    std::stringstream ss;
+    ss << fsIn.rdbuf(); //read the file
+    std::string str = ss.str();
+
+    // read string char by char
+    for (int iChar = 0; iChar < str.size(); ++iChar) {
+        rgu32Buffer[nBufferSize++] = str[iChar];
+        if (nBufferSize >= 16) {
+            const unsigned char* rgcResult = cypher.Decrypt(rgu32Buffer, rgu32Expanded);
+            for (int n = 0; n < 16; ++n) {
+                fsOut << rgcResult[n];
             }
+            delete[] rgcResult;
+            nBufferSize = 0;
         }
     }
 
     fsOut.close();
     fsIn.close();
 
-    cout << "\tSUCCESS" << endl << endl;
+    cout << "\n\tSUCCESS" << endl << endl;
 }
 
 string ToLower(const string& szString) {
@@ -240,7 +244,7 @@ string QueryDecryptInputFile() {
 }
 
 unsigned char* QueryKey() {
-    string szPrompt = "Key to encrypt/decrypt with?";
+    string szPrompt = "Key to encrypt/decrypt with?\n (key must be 32 chars long and in hex, example key: 010402030103040A090B070F0F060300 )";
     string szResponse = Query(szPrompt);
     while (true) {
 
@@ -258,9 +262,8 @@ unsigned char* QueryKey() {
 
         break;
     }
-    
 
-    if (szPrompt.size() > 32) {
+    if (szResponse.size() > 32) {
         cout << "\tWARN: Key is longer than 32 chars but only the first 32 chars will be used." << endl << endl;
     }
 

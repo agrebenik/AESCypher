@@ -4,6 +4,14 @@
 
 #include "Util.h"
 
+void Print(const unsigned char* rgcBlock) {
+    cout << "\"";
+    for (int n = 0; n < 16; ++n) {
+        cout << rgcBlock[n];
+    };
+    cout << "\"";
+}
+
 void KeyExpansion(const unsigned char* rgcKey, unsigned int* rgu32Expanded) {
 
     // the first 128 bits of the key expansion are the original key

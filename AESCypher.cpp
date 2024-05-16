@@ -136,7 +136,7 @@ void AESCypher::InverseMixColumns() {
     }
 }
 
-unsigned int* AESCypher::Encrypt(const unsigned char* rgcMessage, const unsigned int rgu32Expanded[176]) {
+unsigned char* AESCypher::Encrypt(const unsigned char* rgcMessage, const unsigned int rgu32Expanded[176]) {
 
     // store the first 16 bytes of our original message
     for (int iByte = 0; iByte < 16; ++iByte) {
@@ -163,7 +163,7 @@ unsigned int* AESCypher::Encrypt(const unsigned char* rgcMessage, const unsigned
         AddRoundKey(rgu32RoundKey);
     }
 
-    auto* rgu32Encrypted = new unsigned int[16];
+    auto* rgu32Encrypted = new unsigned char[16];
 
     // copy our state over to our encryption result
     for (int iByte = 0; iByte < 16; ++iByte) {
