@@ -104,7 +104,7 @@ void AESCypher::MixColumns() {
 
         // realize temp in state
         for (int iRowByte = 0; iRowByte < 4; ++iRowByte) {
-            m_rgu32State[cRow+iRowByte] = rgu32Tmp[iRowByte];
+            m_rgu32State[u32Offset+iRowByte] = rgu32Tmp[iRowByte];
         }
     }
 }
@@ -131,7 +131,7 @@ void AESCypher::InverseMixColumns() {
 
         // realize temp in state
         for (int iRowByte = 0; iRowByte < 4; ++iRowByte) {
-            m_rgu32State[cRow+iRowByte] = rgu32Tmp[iRowByte];
+            m_rgu32State[u32Offset+iRowByte] = rgu32Tmp[iRowByte];
         }
     }
 }
