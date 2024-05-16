@@ -58,11 +58,11 @@ void ModeEncrypt() {
         for (int iChar = 0; iChar < szLine.size(); ++iChar) {
             rgcBuffer[nBufferSize++] = szLine[iChar];
             if (nBufferSize >= 16) {
-                const unsigned int* rgcResult = cypher.Encrypt(rgcBuffer, rgu32Expanded);
+                const unsigned int* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
                 for (int n = 0; n < 16; ++n) {
-                    fsOut << rgcResult[n];
+                    fsOut << rgu32Result[n];
                 }
-                delete[] rgcResult;
+                delete[] rgu32Result;
                 nBufferSize = 0;
             }
         }
@@ -71,27 +71,63 @@ void ModeEncrypt() {
         for (;nBufferSize < 16; ++nBufferSize) {
             rgcBuffer[nBufferSize] = 0;
         }
-        const unsigned int* rgcResult = cypher.Encrypt(rgcBuffer, rgu32Expanded);
+        const unsigned int* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
         for (int n = 0; n < 16; ++n) {
-            fsOut << rgcResult[n];
+            fsOut << rgu32Result[n];
         }
-        delete[] rgcResult;
+        delete[] rgu32Result;
     }
+
     fsOut.close();
     fsIn.close();
+
+    cout << "\tSUCCESS" << endl << endl;
 }
 
 void ModeDecrypt() {
     ifstream fsIn;
     fsIn.open(QueryDecryptInputFile());
 
-    stringstream ssBuffer;
-    string szLine;
-    while (getline(fsIn, szLine)) {
-        ssBuffer << szLine << endl;
+    ofstream fsOut;
+    fsOut.open(Query("What file would you like to output to?"));
+
+    unsigned char rgcKey[16];
+    string szKey = QueryKey();
+
+    for (int n = 0; n < 16; ++n) {
+        rgcKey[n] = szKey[n];
     }
 
-    string szFile = ssBuffer.str();
+    // apply key expansion to expand our key before encryption
+    unsigned int rgu32Expanded[176];
+    KeyExpansion(rgcKey, rgu32Expanded);
+
+    AESCypher cypher;
+
+    string szLine;
+    unsigned int rgu32Buffer[16];
+    unsigned int nBufferSize = 0;
+    while (getline(fsIn, szLine)) {
+        szLine += '\n';
+
+        // read string char by char
+        for (int iChar = 0; iChar < szLine.size(); ++iChar) {
+            rgu32Buffer[nBufferSize++] = szLine[iChar];
+            if (nBufferSize >= 16) {
+                const unsigned char* rgcResult = cypher.Decrypt(rgu32Buffer, rgu32Expanded);
+                for (int n = 0; n < 16; ++n) {
+                    fsOut << rgcResult[n];
+                }
+                delete[] rgcResult;
+                nBufferSize = 0;
+            }
+        }
+    }
+
+    fsOut.close();
+    fsIn.close();
+
+    cout << "\tSUCCESS" << endl << endl;
 }
 
 string ToLower(const string& szString) {
