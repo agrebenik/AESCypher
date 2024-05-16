@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "AESCypher::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-AESCypher-Debug-cc4906e467140b354bcf.json",
+					"jsonFile" : "target-AESCypher-Debug-08aab6e06ca3aa91f56c.json",
 					"name" : "AESCypher",
 					"projectIndex" : 0
 				}
@@ -49,12 +49,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/usagi/CLionProjects/AESEncryption/cmake-build-debug",
-		"source" : "C:/Users/usagi/CLionProjects/AESEncryption"
+		"build" : "C:/Users/Usagi/Documents/AESCypher/cmake-build-debug",
+		"source" : "C:/Users/Usagi/Documents/AESCypher"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 4
+		"minor" : 6
 	}
 }

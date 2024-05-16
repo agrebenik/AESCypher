@@ -24,7 +24,7 @@ private:
 
 public:
     unsigned int* Encrypt(const unsigned char* rgcMessage, const unsigned int rgcKey[176]);
-    unsigned char* Decrypt(const unsigned int* rgu32Encrypted, const unsigned int rgcKey[176]);
+    unsigned char* Decrypt(const unsigned char* rgu32Encrypted, const unsigned int rgcKey[176]);
 };
 
 

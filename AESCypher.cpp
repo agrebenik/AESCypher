@@ -174,7 +174,7 @@ unsigned int* AESCypher::Encrypt(const unsigned char* rgcMessage, const unsigned
 }
 
 
-unsigned char* AESCypher::Decrypt(const unsigned int* rgu32Encrypted, const unsigned int rgu32Expanded[176]) {
+unsigned char* AESCypher::Decrypt(const unsigned char* rgu32Encrypted, const unsigned int rgu32Expanded[176]) {
 
     // store the first 16 bytes of our encrypted message
     for (int iByte = 0; iByte < 16; ++iByte) {

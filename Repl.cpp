@@ -32,20 +32,18 @@ void ModeEncrypt() {
     fsIn.open(QueryEncryptInputFile());
 
     ofstream fsOut;
-    fsOut.open(Query("What file would you like to output to? (will automatically end in .aes)") + ".aes");
+    fsOut.open(Query("What file would you like to output to? (will automatically end in .aes)") + ".aes", ios::out | ios::binary);
 
-    unsigned char rgcKey[16];
-    string szKey = QueryKey();
-
-    for (int n = 0; n < 16; ++n) {
-        rgcKey[n] = szKey[n];
-    }
+    unsigned char* rgcKey = QueryKey();
 
     // apply key expansion to expand our key before encryption
     unsigned int rgu32Expanded[176];
     KeyExpansion(rgcKey, rgu32Expanded);
+    delete[] rgcKey;
 
     AESCypher cypher;
+
+    string out = "";
 
     // get whole 
     string szLine;
@@ -60,7 +58,7 @@ void ModeEncrypt() {
             if (nBufferSize >= 16) {
                 const unsigned int* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
                 for (int n = 0; n < 16; ++n) {
-                    fsOut << rgu32Result[n];
+                    fsOut << (unsigned char) rgu32Result[n];
                 }
                 delete[] rgu32Result;
                 nBufferSize = 0;
@@ -73,10 +71,12 @@ void ModeEncrypt() {
         }
         const unsigned int* rgu32Result = cypher.Encrypt(rgcBuffer, rgu32Expanded);
         for (int n = 0; n < 16; ++n) {
-            fsOut << rgu32Result[n];
+            fsOut << (unsigned char) rgu32Result[n];
         }
         delete[] rgu32Result;
     }
+
+//    fsOut << out;
 
     fsOut.close();
     fsIn.close();
@@ -91,21 +91,17 @@ void ModeDecrypt() {
     ofstream fsOut;
     fsOut.open(Query("What file would you like to output to?"));
 
-    unsigned char rgcKey[16];
-    string szKey = QueryKey();
-
-    for (int n = 0; n < 16; ++n) {
-        rgcKey[n] = szKey[n];
-    }
+    unsigned char* rgcKey = QueryKey();
 
     // apply key expansion to expand our key before encryption
     unsigned int rgu32Expanded[176];
     KeyExpansion(rgcKey, rgu32Expanded);
+    delete[] rgcKey;
 
     AESCypher cypher;
 
     string szLine;
-    unsigned int rgu32Buffer[16];
+    unsigned char rgu32Buffer[16];
     unsigned int nBufferSize = 0;
     while (getline(fsIn, szLine)) {
         szLine += '\n';
@@ -173,23 +169,6 @@ string Query(const string& szPrompt) {
     string szResponse;
     getline(cin, szResponse);
     return szResponse;
-}
-
-bool QueryBool(const string& szPrompt) {
-
-    string szResponse = ToLower(Query(szPrompt));
-    bool bResponse = false;
-    while (true) {
-        if (szResponse != "yes" && szResponse != "no" &&
-            szResponse != "y" && szResponse != "n") {
-                cout << "\tERR: Expected Y/N." << endl << endl;
-                continue;
-            }
-
-        break;
-    }
-    
-    return bResponse;
 }
 
 unsigned int QueryInt(const string& szPrompt) {
@@ -260,13 +239,13 @@ string QueryDecryptInputFile() {
     return szResponse;
 }
 
-string QueryKey() {
+unsigned char* QueryKey() {
     string szPrompt = "Key to encrypt/decrypt with?";
     string szResponse = Query(szPrompt);
     while (true) {
 
-        if (szResponse.size() < 16) {
-            cout << "\tERR: Key must be at least 16 chars long." << endl << endl;
+        if (szResponse.size() < 32) {
+            cout << "\tERR: Key must be at least 32 chars long." << endl << endl;
             szResponse = Query(szPrompt);
             continue;
         }
@@ -281,9 +260,21 @@ string QueryKey() {
     }
     
 
-    if (szPrompt.size() > 16) {
-        cout << "\tWARN: Key is longer than 16 chars but only the first 16 chars will be used." << endl << endl;
+    if (szPrompt.size() > 32) {
+        cout << "\tWARN: Key is longer than 32 chars but only the first 32 chars will be used." << endl << endl;
     }
 
-    return szResponse;
+    auto* rgcKey = new unsigned char[16];
+    unsigned int cKeyChars = 0;
+    string szHex = "";
+
+    for (int n = 0; n < 32; ++n) {
+        szHex += szResponse[n];
+        if (szHex.size() >= 2) {
+            rgcKey[cKeyChars++] = stoi(szHex, NULL, 16);
+            szHex = "";
+        }
+    }
+
+    return rgcKey;
 }

@@ -20,10 +20,9 @@ void ModeDecrypt();
 void ModeEncrypt();
 
 string Query(const string& szPrompt);
-bool QueryBool(const string& szPrompt);
 unsigned int QueryInt(const string& szPrompt);
 unsigned int QueryMode();
-string QueryKey();
+unsigned char* QueryKey();
 string QueryEncryptInputFile();
 string QueryDecryptInputFile();
 
